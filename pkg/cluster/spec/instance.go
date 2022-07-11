@@ -43,7 +43,7 @@ const (
 	ComponentGrafana          = "grafana"
 	ComponentDrainer          = "drainer"
 	ComponentPump             = "pump"
-	ComponentCDC              = "cdc"
+	ComponentCDC              = "tikv-cdc"
 	ComponentTiSpark          = "tispark"
 	ComponentSpark            = "spark"
 	ComponentAlertmanager     = "alertmanager"
