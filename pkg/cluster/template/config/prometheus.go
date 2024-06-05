@@ -42,6 +42,7 @@ type PrometheusConfig struct {
 	DrainerAddrs              []string
 	CDCAddrs                  []string
 	TiKVCDCAddrs              []string
+	TiKVWorkerAddrs           []string
 	BlackboxExporterAddrs     []string
 	LightningAddrs            []string
 	MonitoredServers          []string
@@ -145,6 +146,12 @@ func (c *PrometheusConfig) AddCDC(ip string, port uint64) *PrometheusConfig {
 // AddTiKVCDC add a tikv-cdc address
 func (c *PrometheusConfig) AddTiKVCDC(ip string, port uint64) *PrometheusConfig {
 	c.TiKVCDCAddrs = append(c.TiKVCDCAddrs, utils.JoinHostPort(ip, int(port)))
+	return c
+}
+
+// AddTiKVWorker add a tikv-worker address
+func (c *PrometheusConfig) AddTiKVWorker(ip string, port uint64) *PrometheusConfig {
+	c.TiKVWorkerAddrs = append(c.TiKVWorkerAddrs, utils.JoinHostPort(ip, int(port)))
 	return c
 }
 

@@ -45,7 +45,7 @@ func GetNodeInfo(
 		if _, ok := foundArchs[arch]; !ok {
 			inst := inst
 			errg.Go(func() error {
-				return Download("cluster", inst.OS(), inst.Arch(), ver)
+				return Download("cluster", inst.OS(), inst.Arch(), ver, "")
 			})
 		}
 		foundArchs[arch] = struct{}{}

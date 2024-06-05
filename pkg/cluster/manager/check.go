@@ -222,6 +222,7 @@ func checkSystemInfo(
 						inst.OS(),
 						inst.Arch(),
 						insightVer,
+						"",
 					).
 					BuildAsStep(fmt.Sprintf("  - Downloading check tools for %s/%s", inst.OS(), inst.Arch()))
 				downloadTasks = append(downloadTasks, t0)

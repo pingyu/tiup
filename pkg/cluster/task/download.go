@@ -29,15 +29,17 @@ type Downloader struct {
 	os        string
 	arch      string
 	version   string
+	baseImage string
 }
 
 // NewDownloader create a Downloader instance.
-func NewDownloader(component string, os string, arch string, version string) *Downloader {
+func NewDownloader(component string, os string, arch string, version string, baseImage string) *Downloader {
 	return &Downloader{
 		component: component,
 		os:        os,
 		arch:      arch,
 		version:   version,
+		baseImage: baseImage,
 	}
 }
 
@@ -55,7 +57,7 @@ func (d *Downloader) Execute(_ context.Context) error {
 		}
 		d.version = string(ver)
 	}
-	return operator.Download(d.component, d.os, d.arch, d.version)
+	return operator.Download(d.component, d.os, d.arch, d.version, d.baseImage)
 }
 
 // Rollback implements the Task interface

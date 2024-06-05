@@ -50,6 +50,7 @@ const (
 	ComponentPump             = "pump"
 	ComponentCDC              = "cdc"
 	ComponentTiKVCDC          = "tikv-cdc"
+	ComponentTiKVWorker       = "tikv_worker"
 	ComponentTiSpark          = "tispark"
 	ComponentSpark            = "spark"
 	ComponentAlertmanager     = "alertmanager"
@@ -118,6 +119,8 @@ type Instance interface {
 	CalculateVersion(string) string
 	// SetVersion(string)
 	setTLSConfig(ctx context.Context, enableTLS bool, configs map[string]any, paths meta.DirPaths) (map[string]any, error)
+
+	GetBaseImage() string
 }
 
 // PortStarted wait until a port is being listened
@@ -162,6 +165,8 @@ type BaseInstance struct {
 	UptimeFn func(ctx context.Context, timeout time.Duration, tlsCfg *tls.Config) time.Duration
 
 	Component Component
+
+	BaseImage string
 }
 
 // Ready implements Instance interface
@@ -542,4 +547,9 @@ func (i *BaseInstance) Status(ctx context.Context, timeout time.Duration, tlsCfg
 // Uptime implements Instance interface
 func (i *BaseInstance) Uptime(ctx context.Context, timeout time.Duration, tlsCfg *tls.Config) time.Duration {
 	return i.UptimeFn(ctx, timeout, tlsCfg)
+}
+
+// GetBaseImage implements Instance interface
+func (i *BaseInstance) GetBaseImage() string {
+	return i.BaseImage
 }

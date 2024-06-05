@@ -200,8 +200,8 @@ func (b *Builder) CopyFile(src, dst, server string, download bool, limit int, co
 }
 
 // Download appends a Downloader task to the current task collection
-func (b *Builder) Download(component, os, arch string, version string) *Builder {
-	b.tasks = append(b.tasks, NewDownloader(component, os, arch, version))
+func (b *Builder) Download(component, os, arch string, version string, baseImage string) *Builder {
+	b.tasks = append(b.tasks, NewDownloader(component, os, arch, version, baseImage))
 	return b
 }
 

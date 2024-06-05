@@ -326,7 +326,7 @@ func HandleImportPathMigration(clsName string) error {
 		}); lckErr != nil {
 			return lckErr
 		}
-		if lckErr := os.Mkdir(path.Join(dirPath, migrateLockName), 0755); lckErr != nil {
+		if lckErr := os.Mkdir(path.Join(dirPath, migrateLockName), 0o755); lckErr != nil {
 			return perrs.Errorf("can not lock config dir, %s", lckErr)
 		}
 		defer func() {
@@ -343,4 +343,21 @@ func HandleImportPathMigration(clsName string) error {
 		return os.Rename(path.Join(dirPath, "config"), targetPath)
 	}
 	return nil
+}
+
+// SetDfsConfigs set the dfs options to the instance config
+func SetDfsConfigs(configs map[string]any, dfs DfsOptions) map[string]any {
+	if dfs.S3Endpoint == "" && dfs.S3Region == "" {
+		return configs
+	}
+	if configs == nil {
+		configs = make(map[string]any)
+	}
+	configs["dfs.prefix"] = dfs.Prefix
+	configs["dfs.s3-endpoint"] = dfs.S3Endpoint
+	configs["dfs.s3-key-id"] = dfs.S3KeyID
+	configs["dfs.s3-secret-key"] = dfs.S3SecretKey
+	configs["dfs.s3-bucket"] = dfs.S3Bucket
+	configs["dfs.s3-region"] = dfs.S3Region
+	return configs
 }

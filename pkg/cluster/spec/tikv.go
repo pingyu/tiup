@@ -230,6 +230,8 @@ func (c *TiKVComponent) Instances() []Instance {
 				return UptimeByHost(s.GetManageHost(), s.StatusPort, timeout, tlsCfg)
 			},
 			Component: c,
+
+			BaseImage: c.Topology.ComponentBaseImages.TiKV,
 		}, c.Topology, 0})
 	}
 	return ins
@@ -322,6 +324,9 @@ func (i *TiKVInstance) InitConfig(
 	if err != nil {
 		return err
 	}
+
+	// set DFS configs
+	spec.Config = SetDfsConfigs(spec.Config, topo.GlobalOptions.Dfs)
 
 	if err := i.MergeServerConfig(ctx, e, globalConfig, spec.Config, paths); err != nil {
 		return err

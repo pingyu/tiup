@@ -16,6 +16,7 @@ package operator
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/pingcap/errors"
 	"github.com/pingcap/tiup/pkg/cluster/clusterutil"
@@ -25,7 +26,7 @@ import (
 
 // Download the specific version of a component from
 // the repository, there is nothing to do if the specified version exists.
-func Download(component, nodeOS, arch string, version string) error {
+func Download(component, nodeOS, arch string, version string, baseImage string) error {
 	if component == "" {
 		return errors.New("component name not specified")
 	}
@@ -37,7 +38,7 @@ func Download(component, nodeOS, arch string, version string) error {
 	fileName := fmt.Sprintf("%s-%s-%s.tar.gz", resName, nodeOS, arch)
 	targetPath := spec.ProfilePath(spec.TiUPPackageCacheDir, fileName)
 
-	if err := utils.MkdirAll(spec.ProfilePath(spec.TiUPPackageCacheDir), 0755); err != nil {
+	if err := utils.MkdirAll(spec.ProfilePath(spec.TiUPPackageCacheDir), 0o755); err != nil {
 		return err
 	}
 
@@ -48,13 +49,61 @@ func Download(component, nodeOS, arch string, version string) error {
 
 	// Download from repository if not exists
 	if utils.IsNotExist(targetPath) {
-		if err := repo.DownloadComponent(component, version, targetPath); err != nil {
+		var err error
+		if baseImage == "" {
+			err = repo.DownloadComponent(component, version, targetPath)
+		} else {
+			err = downloadFromDockerHub(component, nodeOS, arch, baseImage, version, targetPath)
+		}
+		if err != nil {
 			return err
 		}
 	} else {
-		if err := repo.VerifyComponent(component, version, targetPath); err != nil {
+		var err error
+		if baseImage == "" {
+			err = repo.VerifyComponent(component, version, targetPath)
+		}
+		if err != nil {
 			os.Remove(targetPath)
 		}
 	}
 	return nil
+}
+
+func downloadFromDockerHub(component, nodeOS, arch string, baseImage, version string, targetPath string) error {
+	platform := nodeOS + "/" + arch
+	path := baseImage + ":" + version
+	cmd := exec.Command("docker", "pull", "--platform", platform, path)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		return errors.Annotatef(err, "%s: failed to pull docker image %s", component, path)
+	}
+
+	binaryName := dockerBinaryName(component)
+	cmdStr := fmt.Sprintf("id=$(docker create --platform %s %s)"+
+		" && docker cp \"$id\":%s - | tar -x"+
+		" && tar czf %s %s"+
+		" && docker rm -v $id", platform, path, binaryName, targetPath, binaryName)
+	cmd = exec.Command("bash", "-c", cmdStr)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	return errors.Annotatef(err, "%s: failed to extract docker image %s", component, path)
+}
+
+func dockerBinaryName(component string) string {
+	switch component {
+	case spec.ComponentPD:
+		return "pd-server"
+	case spec.ComponentTiKV:
+		return "tikv-server"
+	case spec.ComponentTiDB:
+		return "tidb-server"
+	case spec.ComponentTiKVWorker:
+		return "tikv-worker"
+	default:
+		return component
+	}
 }
