@@ -20,7 +20,6 @@ import (
 	"strconv"
 	"strings"
 
-	tiupexec "github.com/pingcap/tiup/pkg/exec"
 	"github.com/pingcap/tiup/pkg/utils"
 )
 
@@ -35,7 +34,7 @@ type TiDBInstance struct {
 }
 
 // NewTiDBInstance return a TiDBInstance
-func NewTiDBInstance(binPath string, dir, host, configPath string, id, port int, pds []*PDInstance, tiproxyCertDir string, enableBinlog bool, isCSEMode bool) *TiDBInstance {
+func NewTiDBInstance(binPath string, dir, host, configPath string, portOffset int, id, port int, pds []*PDInstance, tiproxyCertDir string, enableBinlog bool, isCSEMode bool) *TiDBInstance {
 	if port <= 0 {
 		port = 4000
 	}
@@ -45,8 +44,8 @@ func NewTiDBInstance(binPath string, dir, host, configPath string, id, port int,
 			ID:         id,
 			Dir:        dir,
 			Host:       host,
-			Port:       utils.MustGetFreePort(host, port),
-			StatusPort: utils.MustGetFreePort("0.0.0.0", 10080),
+			Port:       utils.MustGetFreePort(host, port, portOffset),
+			StatusPort: utils.MustGetFreePort("0.0.0.0", 10080, portOffset),
 			ConfigPath: configPath,
 		},
 		tiproxyCertDir: tiproxyCertDir,
@@ -57,7 +56,7 @@ func NewTiDBInstance(binPath string, dir, host, configPath string, id, port int,
 }
 
 // Start calls set inst.cmd and Start
-func (inst *TiDBInstance) Start(ctx context.Context, version utils.Version) error {
+func (inst *TiDBInstance) Start(ctx context.Context) error {
 	configPath := filepath.Join(inst.Dir, "tidb.toml")
 	if err := prepareConfig(
 		configPath,
@@ -82,10 +81,6 @@ func (inst *TiDBInstance) Start(ctx context.Context, version utils.Version) erro
 		args = append(args, "--enable-binlog=true")
 	}
 
-	var err error
-	if inst.BinPath, err = tiupexec.PrepareBinary("tidb", version, inst.BinPath); err != nil {
-		return err
-	}
 	inst.Process = &process{cmd: PrepareCommand(ctx, inst.BinPath, args, nil, inst.Dir)}
 
 	logIfErr(inst.Process.SetOutputFile(inst.LogFile()))

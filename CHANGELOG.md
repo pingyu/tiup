@@ -1,5 +1,48 @@
 TiUP Changelog
 
+## [1.16.1] 2024-10-31
+
+### New Features
+
+- Deploy DM in `tiup-playground` (#2465, @GMHDBJD, @siddontang)
+
+### Fixes
+
+- Fix several racings during download, do not upgrade nightly automatically in `tiup-cluster` (#2458, @xhebox)
+- Fix possible panic when `tiup-playground` failed to start (#2457, @xhebox)
+- Respect `component_versions` when `tiup-cluster` scales (#2451, @djshow832)
+- Code clean: replace 'math/rand' with 'crypto/rand' (#2455, @bb7133)
+- Fix tiup cannot update itself when tiup comonent exist (#2443, @nexustar)
+- Do not check HTTP port for TiFlash 7.1.0 or above (#2440, @Lloyd-Pottiger)
+- Also hide other password args (#2436, @xhebox)
+
+### Improvements
+
+- Avoid unnecessary primary transfer for pdms mode in `tiup-cluster` (#2414, @HuSharp)
+- Add `--port-offset` for `tiup-playground` to start multiple instances without port conflicts (#2453, @breezewish)
+- Start with a name for pdms mode in `tiup-cluster` and `tiup-playground` (#2438, #2446, #2447, @HuSharp)
+- Remove prometheus systemd and interrupts collector (#2445, @xhebox)
+- Add example of setting the tiflash-proxy topology (#2444, @JaySon-Huang)
+- Improve cluster restart messaging for `tiup-cluster` (#2442, @zph)
+- Print version when filling `tiup-playground --xx.binpath` (#2334, @HuSharp)
+- Only display `--comments` when needed for `tiup-playground` (#2314, @dveeden)
+
+## [1.16.0] 2024-06-27
+
+### New Features
+
+- Deploy PD as microservices in `tiup-cluster` (#2377, @rleungx)
+
+### Fixes
+
+- Fix missing TiProxy session certs when `tiup-cluster` scale-out (#2432, @djshow832)
+
+### Improvements
+
+- Remove tombstone nodes of pd when executing `tiup-cluster prune` (#2044, @nexustar)
+- Redact `-p` (password) arguments in command execution (#2425, @nexustar)
+- Avoid duplicated downloads when upgrade (#2423, @nexustar)
+
 ## [1.15.2] 2024-05-28
 
 ### Improvements
