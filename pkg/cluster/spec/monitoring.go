@@ -332,6 +332,13 @@ func (i *MonitorInstance) InitConfig(
 			cfig.AddTiKVCDC(tikvCdc.Host, uint64(tikvCdc.Port))
 		}
 	}
+	if servers, found := topoHasField("TiKVWorkers"); found {
+		for i := 0; i < servers.Len(); i++ {
+			tikvWorker := servers.Index(i).Interface().(*TiKVWorkerSpec)
+			uniqueHosts.Insert(tikvWorker.Host)
+			cfig.AddTiKVCDC(tikvWorker.Host, uint64(tikvWorker.Port))
+		}
+	}
 	if servers, found := topoHasField("Monitors"); found {
 		for i := 0; i < servers.Len(); i++ {
 			monitoring := servers.Index(i).Interface().(*PrometheusSpec)

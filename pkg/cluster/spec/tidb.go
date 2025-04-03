@@ -156,6 +156,8 @@ func (c *TiDBComponent) Instances() []Instance {
 				return UptimeByHost(s.GetManageHost(), s.StatusPort, timeout, tlsCfg)
 			},
 			Component: c,
+
+			BaseImage: c.Topology.ComponentBaseImages.TiDB,
 		}, c.Topology})
 	}
 	return ins
@@ -183,7 +185,8 @@ func (i *TiDBInstance) InitConfig(
 
 	enableTLS := topo.GlobalOptions.TLSEnabled
 	spec := i.InstanceSpec.(*TiDBSpec)
-	version := i.CalculateVersion(clusterVersion)
+	// version := i.CalculateVersion(clusterVersion)
+	version := clusterVersion
 
 	pds := []string{}
 	for _, pdspec := range topo.PDServers {

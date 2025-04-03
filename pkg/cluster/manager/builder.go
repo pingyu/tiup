@@ -251,7 +251,7 @@ func buildScaleOutTask(
 			version := inst.CalculateVersion(base.Version)
 			switch compName := inst.ComponentName(); compName {
 			case spec.ComponentGrafana, spec.ComponentPrometheus, spec.ComponentAlertmanager:
-				tb.Download(compName, inst.OS(), inst.Arch(), version).
+				tb.Download(compName, inst.OS(), inst.Arch(), version, "").
 					CopyComponent(compName, inst.OS(), inst.Arch(), version, "", inst.GetManageHost(), deployDir)
 			}
 			deployCompTasks = append(deployCompTasks, tb.BuildAsStep(fmt.Sprintf("  - Deploy instance %s -> %s", inst.ComponentName(), inst.ID())))
@@ -400,10 +400,9 @@ func buildScaleConfigTasks(
 	newPart spec.Topology,
 	base *spec.BaseMeta,
 	gOpt operator.Options,
-	p *tui.SSHConnectionProps) []*task.StepDisplay {
-	var (
-		scaleConfigTasks []*task.StepDisplay // tasks which are used to copy certificate to remote host
-	)
+	p *tui.SSHConnectionProps,
+) []*task.StepDisplay {
+	var scaleConfigTasks []*task.StepDisplay // tasks which are used to copy certificate to remote host
 
 	// copy certificate to remote host
 	newPart.IterInstance(func(inst spec.Instance) {
@@ -471,7 +470,7 @@ func buildMonitoredDeployTask(
 			if found := uniqueCompOSArch.Exist(key); !found {
 				uniqueCompOSArch.Insert(key)
 				downloadCompTasks = append(downloadCompTasks, task.NewBuilder(m.logger).
-					Download(comp, info.os, info.arch, version).
+					Download(comp, info.os, info.arch, version, "").
 					BuildAsStep(fmt.Sprintf("  - Download %s:%s (%s/%s)", comp, version, info.os, info.arch)))
 			}
 
@@ -661,7 +660,7 @@ func buildInitConfigTasks(
 			version := instance.CalculateVersion(base.Version)
 			switch compName {
 			case spec.ComponentGrafana, spec.ComponentPrometheus, spec.ComponentAlertmanager:
-				tb.Download(compName, instance.OS(), instance.Arch(), version).
+				tb.Download(compName, instance.OS(), instance.Arch(), version, "").
 					CopyComponent(
 						compName,
 						instance.OS(),
@@ -721,7 +720,7 @@ func buildDownloadCompTasks(
 			}
 
 			t := task.NewBuilder(logger).
-				Download(inst.ComponentSource(), inst.OS(), inst.Arch(), version).
+				Download(inst.ComponentSource(), inst.OS(), inst.Arch(), version, inst.GetBaseImage()).
 				BuildAsStep(fmt.Sprintf("  - Download %s:%s (%s/%s)",
 					inst.ComponentSource(), version, inst.OS(), inst.Arch()))
 			tasks = append(tasks, t)
@@ -734,7 +733,7 @@ func buildDownloadCompTasks(
 // FIXME: this is a hack and should be replaced by dependency handling in manifest processing
 func buildDownloadSparkTask(inst spec.Instance, logger *logprinter.Logger, gOpt operator.Options) *task.StepDisplay {
 	return task.NewBuilder(logger).
-		Download(spec.ComponentSpark, inst.OS(), inst.Arch(), "").
+		Download(spec.ComponentSpark, inst.OS(), inst.Arch(), "", "").
 		BuildAsStep(fmt.Sprintf("  - Download %s: (%s/%s)",
 			spec.ComponentSpark, inst.OS(), inst.Arch()))
 }
@@ -843,7 +842,7 @@ func buildTLSTask(
 }
 
 func genTiProxySessionCerts(dir string) error {
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 	ca, err := crypto.NewCA("tiproxy")
@@ -940,7 +939,8 @@ func buildCertificateTasks(
 	topo spec.Topology,
 	base *spec.BaseMeta,
 	gOpt operator.Options,
-	p *tui.SSHConnectionProps) ([]*task.StepDisplay, error) {
+	p *tui.SSHConnectionProps,
+) ([]*task.StepDisplay, error) {
 	var (
 		iterErr          error
 		certificateTasks []*task.StepDisplay // tasks which are used to copy certificate to remote host

@@ -28,8 +28,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type metaSuiteTopo struct {
-}
+type metaSuiteTopo struct{}
 
 var _ = Suite(&metaSuiteTopo{})
 
@@ -174,6 +173,13 @@ global:
   ssh_port: 220
   deploy_dir: "test-deploy"
   data_dir: "test-data"
+  dfs:
+    prefix: "test"
+    s3-endpoint: "http://172.8.8.8:9000"
+    s3-key-id: "minioadmin"
+    s3-secret-key: "minioadmin"
+    s3-bucket: "bucket-test"
+    s3-region: "local"
 
 server_configs:
   tidb:
@@ -210,6 +216,14 @@ kvcdc_servers:
     port: 8601
     config:
       log-level: "debug"
+
+tikv_workers:
+  - host: 172.16.5.210
+    port: 19500
+  - host: 172.16.5.211
+    port: 19501
+    config:
+      register: true
 `), &topo)
 	c.Assert(err, IsNil)
 	c.Assert(topo.ServerConfigs.TiDB, DeepEquals, map[string]any{
@@ -295,6 +309,16 @@ kvcdc_servers:
 	}
 	got = FoldMap(topo.TiKVCDCServers[1].Config)
 	c.Assert(got, DeepEquals, expected)
+
+	expected = map[string]any{}
+	got = FoldMap(topo.TiKVWorkers[0].Config)
+	c.Assert(got, DeepEquals, expected)
+
+	expected = map[string]any{
+		"register": true,
+	}
+	got = FoldMap(topo.TiKVWorkers[1].Config)
+	c.Assert(got, DeepEquals, expected)
 }
 
 func (s *metaSuiteTopo) TestGlobalConfigPatch(c *C) {
@@ -379,6 +403,11 @@ kvcdc_servers:
     config:
       log-level: "debug"
 
+tikv_workers:
+  - host: 172.16.5.239
+    config:
+      register: true
+
 `), &topo)
 	c.Assert(err, IsNil)
 	expected := `# WARNING: This file is auto-generated. Do not edit! All your modification will be overwritten!
@@ -410,6 +439,19 @@ gc-ttl = 43200
 log-level = "debug"
 `
 	got, err = Merge2Toml("kvcdc", topo.ServerConfigs.TiKVCDC, topo.TiKVCDCServers[0].Config)
+	c.Assert(err, IsNil)
+	c.Assert(string(got), DeepEquals, expected)
+
+	expected = `# WARNING: This file is auto-generated. Do not edit! All your modification will be overwritten!
+# You can use 'tiup cluster edit-config' and 'tiup cluster reload' to update the configuration
+# All configuration items you want to change can be added to:
+# server_configs:
+#   tikv_worker:
+#     aa.b1.c3: value
+#     aa.b2.c4: value
+register = true
+`
+	got, err = Merge2Toml("tikv_worker", topo.ServerConfigs.TiKVWorker, topo.TiKVWorkers[0].Config)
 	c.Assert(err, IsNil)
 	c.Assert(string(got), DeepEquals, expected)
 }
@@ -806,7 +848,7 @@ cdc_servers:
 	instances := cdcComp.Instances()
 	c.Assert(len(instances), Equals, 1)
 
-	var expected = map[string]struct {
+	expected := map[string]struct {
 		configSupported  bool
 		dataDir          bool // data-dir is set
 		dataDirSupported bool
@@ -878,7 +920,7 @@ tiflash_servers:
 			if defaultUser, ok := usersSection.(map[string]any)["default"]; !ok {
 				c.Error("Can not get default users section")
 			} else {
-				var password = defaultUser.(map[string]any)["password"]
+				password := defaultUser.(map[string]any)["password"]
 				c.Assert(password.(string), Equals, "")
 			}
 		}

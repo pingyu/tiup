@@ -145,7 +145,7 @@ This operation will upgrade %s %s cluster %s to %s:%s`,
 			if _, found := uniqueComps[key]; !found {
 				uniqueComps[key] = struct{}{}
 				t := task.NewBuilder(m.logger).
-					Download(inst.ComponentSource(), inst.OS(), inst.Arch(), version).
+					Download(inst.ComponentSource(), inst.OS(), inst.Arch(), version, inst.GetBaseImage()).
 					Build()
 				downloadCompTasks = append(downloadCompTasks, t)
 			}

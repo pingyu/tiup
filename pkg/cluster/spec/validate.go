@@ -945,6 +945,7 @@ func (s *Specification) validateTLSEnabled() error {
 			ComponentDrainer,
 			ComponentCDC,
 			ComponentTiKVCDC,
+			ComponentTiKVWorker,
 			ComponentDashboard,
 			ComponentPrometheus,
 			ComponentAlertmanager,

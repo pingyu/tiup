@@ -206,6 +206,8 @@ func (c *PDComponent) Instances() []Instance {
 					return UptimeByHost(s.GetManageHost(), s.ClientPort, timeout, tlsCfg)
 				},
 				Component: c,
+
+				BaseImage: c.Topology.ComponentBaseImages.PD,
 			},
 			topo: c.Topology,
 		})
@@ -237,7 +239,8 @@ func (i *PDInstance) InitConfig(
 	enableTLS := topo.GlobalOptions.TLSEnabled
 	spec := i.InstanceSpec.(*PDSpec)
 	scheme := utils.Ternary(enableTLS, "https", "http").(string)
-	version := i.CalculateVersion(clusterVersion)
+	// version := i.CalculateVersion(clusterVersion)
+	version := clusterVersion
 
 	initialCluster := []string{}
 	for _, pdspec := range topo.PDServers {

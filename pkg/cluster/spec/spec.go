@@ -102,6 +102,17 @@ type (
 		Custom          any                  `yaml:"custom,omitempty" validate:"custom:ignore"`
 		SystemdMode     SystemdMode          `yaml:"systemd_mode,omitempty" default:"system"`
 		PDMode          string               `yaml:"pd_mode,omitempty" validate:"pd_mode:editable"`
+		Dfs             DfsOptions           `yaml:"dfs,omitempty"`
+	}
+
+	// DfsOptions represents the configuration of DFS
+	DfsOptions struct {
+		Prefix      string `yaml:"prefix,omitempty"`
+		S3Endpoint  string `yaml:"s3-endpoint,omitempty"`
+		S3KeyID     string `yaml:"s3-key-id,omitempty"`
+		S3SecretKey string `yaml:"s3-secret-key,omitempty"`
+		S3Bucket    string `yaml:"s3-bucket,omitempty"`
+		S3Region    string `yaml:"s3-region,omitempty"`
 	}
 
 	// MonitoredOptions represents the monitored node configuration
@@ -132,6 +143,7 @@ type (
 		Drainer        map[string]any    `yaml:"drainer"`
 		CDC            map[string]any    `yaml:"cdc"`
 		TiKVCDC        map[string]any    `yaml:"kvcdc"`
+		TiKVWorker     map[string]any    `yaml:"tikv_worker"`
 		Grafana        map[string]string `yaml:"grafana"`
 	}
 
@@ -148,6 +160,7 @@ type (
 		Drainer      string `yaml:"drainer,omitempty"`
 		CDC          string `yaml:"cdc,omitempty"`
 		TiKVCDC      string `yaml:"kvcdc,omitempty"`
+		TiKVWorker   string `yaml:"tikv_worker,omitempty"`
 		TiProxy      string `yaml:"tiproxy,omitempty"`
 		Prometheus   string `yaml:"prometheus,omitempty"`
 		Grafana      string `yaml:"grafana,omitempty"`
@@ -157,43 +170,54 @@ type (
 		// BlackboxExporter string `yaml:"blackbox_exporter,omitempty"`
 	}
 
+	// ComponentBaseImages represents the base images of components
+	ComponentBaseImages struct {
+		TiDB       string `yaml:"tidb,omitempty"`
+		TiKV       string `yaml:"tikv,omitempty"`
+		PD         string `yaml:"pd,omitempty"`
+		TiKVWorker string `yaml:"tikv_worker,omitempty"`
+	}
+
 	// ComponentSources represents the source of components
 	ComponentSources struct {
-		TiDB      string `yaml:"tidb,omitempty" validate:"tidb:editable"`
-		TiKV      string `yaml:"tikv,omitempty" validate:"tikv:editable"`
-		TiFlash   string `yaml:"tiflash,omitempty" validate:"tiflash:editable"`
-		PD        string `yaml:"pd,omitempty" validate:"pd:editable"`
-		Dashboard string `yaml:"tidb_dashboard,omitempty" validate:"tidb_dashboard:editable"`
-		Pump      string `yaml:"pump,omitempty" validate:"pump:editable"`
-		Drainer   string `yaml:"drainer,omitempty" validate:"drainer:editable"`
-		CDC       string `yaml:"cdc,omitempty" validate:"cdc:editable"`
-		TiKVCDC   string `yaml:"kvcdc,omitempty" validate:"kvcdc:editable"`
+		TiDB       string `yaml:"tidb,omitempty" validate:"tidb:editable"`
+		TiKV       string `yaml:"tikv,omitempty" validate:"tikv:editable"`
+		TiFlash    string `yaml:"tiflash,omitempty" validate:"tiflash:editable"`
+		PD         string `yaml:"pd,omitempty" validate:"pd:editable"`
+		Dashboard  string `yaml:"tidb_dashboard,omitempty" validate:"tidb_dashboard:editable"`
+		Pump       string `yaml:"pump,omitempty" validate:"pump:editable"`
+		Drainer    string `yaml:"drainer,omitempty" validate:"drainer:editable"`
+		CDC        string `yaml:"cdc,omitempty" validate:"cdc:editable"`
+		TiKVCDC    string `yaml:"kvcdc,omitempty" validate:"kvcdc:editable"`
+		TiKVWorker string `yaml:"tikv_worker,omitempty" validate:"kvcdc:editable"`
 	}
 
 	// Specification represents the specification of topology.yaml
 	Specification struct {
-		GlobalOptions     GlobalOptions        `yaml:"global,omitempty" validate:"global:editable"`
-		MonitoredOptions  MonitoredOptions     `yaml:"monitored,omitempty" validate:"monitored:editable"`
-		ComponentVersions ComponentVersions    `yaml:"component_versions,omitempty" validate:"component_versions:editable"`
-		ComponentSources  ComponentSources     `yaml:"component_sources,omitempty" validate:"component_sources:editable"`
-		ServerConfigs     ServerConfigs        `yaml:"server_configs,omitempty" validate:"server_configs:ignore"`
-		TiDBServers       []*TiDBSpec          `yaml:"tidb_servers"`
-		TiKVServers       []*TiKVSpec          `yaml:"tikv_servers"`
-		TiFlashServers    []*TiFlashSpec       `yaml:"tiflash_servers"`
-		TiProxyServers    []*TiProxySpec       `yaml:"tiproxy_servers"`
-		PDServers         []*PDSpec            `yaml:"pd_servers"`
-		TSOServers        []*TSOSpec           `yaml:"tso_servers,omitempty"`
-		SchedulingServers []*SchedulingSpec    `yaml:"scheduling_servers,omitempty"`
-		DashboardServers  []*DashboardSpec     `yaml:"tidb_dashboard_servers,omitempty"`
-		PumpServers       []*PumpSpec          `yaml:"pump_servers,omitempty"`
-		Drainers          []*DrainerSpec       `yaml:"drainer_servers,omitempty"`
-		CDCServers        []*CDCSpec           `yaml:"cdc_servers,omitempty"`
-		TiKVCDCServers    []*TiKVCDCSpec       `yaml:"kvcdc_servers,omitempty"`
-		TiSparkMasters    []*TiSparkMasterSpec `yaml:"tispark_masters,omitempty"`
-		TiSparkWorkers    []*TiSparkWorkerSpec `yaml:"tispark_workers,omitempty"`
-		Monitors          []*PrometheusSpec    `yaml:"monitoring_servers"`
-		Grafanas          []*GrafanaSpec       `yaml:"grafana_servers,omitempty"`
-		Alertmanagers     []*AlertmanagerSpec  `yaml:"alertmanager_servers,omitempty"`
+		GlobalOptions       GlobalOptions        `yaml:"global,omitempty" validate:"global:editable"`
+		MonitoredOptions    MonitoredOptions     `yaml:"monitored,omitempty" validate:"monitored:editable"`
+		ComponentVersions   ComponentVersions    `yaml:"component_versions,omitempty" validate:"component_versions:editable"`
+		ComponentBaseImages ComponentBaseImages  `yaml:"component_base_images,omitempty" validate:"component_base_image:editable"`
+		ComponentSources    ComponentSources     `yaml:"component_sources,omitempty" validate:"component_sources:editable"`
+		ServerConfigs       ServerConfigs        `yaml:"server_configs,omitempty" validate:"server_configs:ignore"`
+		TiDBServers         []*TiDBSpec          `yaml:"tidb_servers"`
+		TiKVServers         []*TiKVSpec          `yaml:"tikv_servers"`
+		TiFlashServers      []*TiFlashSpec       `yaml:"tiflash_servers"`
+		TiProxyServers      []*TiProxySpec       `yaml:"tiproxy_servers"`
+		PDServers           []*PDSpec            `yaml:"pd_servers"`
+		TSOServers          []*TSOSpec           `yaml:"tso_servers,omitempty"`
+		SchedulingServers   []*SchedulingSpec    `yaml:"scheduling_servers,omitempty"`
+		DashboardServers    []*DashboardSpec     `yaml:"tidb_dashboard_servers,omitempty"`
+		PumpServers         []*PumpSpec          `yaml:"pump_servers,omitempty"`
+		Drainers            []*DrainerSpec       `yaml:"drainer_servers,omitempty"`
+		CDCServers          []*CDCSpec           `yaml:"cdc_servers,omitempty"`
+		TiKVCDCServers      []*TiKVCDCSpec       `yaml:"kvcdc_servers,omitempty"`
+		TiKVWorkers         []*TiKVWorkerSpec    `yaml:"tikv_workers,omitempty"`
+		TiSparkMasters      []*TiSparkMasterSpec `yaml:"tispark_masters,omitempty"`
+		TiSparkWorkers      []*TiSparkWorkerSpec `yaml:"tispark_workers,omitempty"`
+		Monitors            []*PrometheusSpec    `yaml:"monitoring_servers"`
+		Grafanas            []*GrafanaSpec       `yaml:"grafana_servers,omitempty"`
+		Alertmanagers       []*AlertmanagerSpec  `yaml:"alertmanager_servers,omitempty"`
 	}
 )
 
@@ -559,27 +583,29 @@ func (s *Specification) GetEtcdProxyClient(tlsCfg *tls.Config, tcpProxy *proxy.T
 func (s *Specification) Merge(that Topology) Topology {
 	spec := that.(*Specification)
 	return &Specification{
-		GlobalOptions:     s.GlobalOptions,
-		MonitoredOptions:  s.MonitoredOptions,
-		ServerConfigs:     s.ServerConfigs,
-		ComponentVersions: s.ComponentVersions.Merge(spec.ComponentVersions),
-		TiDBServers:       append(s.TiDBServers, spec.TiDBServers...),
-		TiKVServers:       append(s.TiKVServers, spec.TiKVServers...),
-		PDServers:         append(s.PDServers, spec.PDServers...),
-		DashboardServers:  append(s.DashboardServers, spec.DashboardServers...),
-		TiFlashServers:    append(s.TiFlashServers, spec.TiFlashServers...),
-		TiProxyServers:    append(s.TiProxyServers, spec.TiProxyServers...),
-		TSOServers:        append(s.TSOServers, spec.TSOServers...),
-		SchedulingServers: append(s.SchedulingServers, spec.SchedulingServers...),
-		PumpServers:       append(s.PumpServers, spec.PumpServers...),
-		Drainers:          append(s.Drainers, spec.Drainers...),
-		CDCServers:        append(s.CDCServers, spec.CDCServers...),
-		TiKVCDCServers:    append(s.TiKVCDCServers, spec.TiKVCDCServers...),
-		TiSparkMasters:    append(s.TiSparkMasters, spec.TiSparkMasters...),
-		TiSparkWorkers:    append(s.TiSparkWorkers, spec.TiSparkWorkers...),
-		Monitors:          append(s.Monitors, spec.Monitors...),
-		Grafanas:          append(s.Grafanas, spec.Grafanas...),
-		Alertmanagers:     append(s.Alertmanagers, spec.Alertmanagers...),
+		GlobalOptions:       s.GlobalOptions,
+		MonitoredOptions:    s.MonitoredOptions,
+		ServerConfigs:       s.ServerConfigs,
+		ComponentVersions:   s.ComponentVersions.Merge(spec.ComponentVersions),
+		ComponentBaseImages: s.ComponentBaseImages,
+		TiDBServers:         append(s.TiDBServers, spec.TiDBServers...),
+		TiKVServers:         append(s.TiKVServers, spec.TiKVServers...),
+		PDServers:           append(s.PDServers, spec.PDServers...),
+		DashboardServers:    append(s.DashboardServers, spec.DashboardServers...),
+		TiFlashServers:      append(s.TiFlashServers, spec.TiFlashServers...),
+		TiProxyServers:      append(s.TiProxyServers, spec.TiProxyServers...),
+		TSOServers:          append(s.TSOServers, spec.TSOServers...),
+		SchedulingServers:   append(s.SchedulingServers, spec.SchedulingServers...),
+		PumpServers:         append(s.PumpServers, spec.PumpServers...),
+		Drainers:            append(s.Drainers, spec.Drainers...),
+		CDCServers:          append(s.CDCServers, spec.CDCServers...),
+		TiKVCDCServers:      append(s.TiKVCDCServers, spec.TiKVCDCServers...),
+		TiKVWorkers:         append(s.TiKVWorkers, spec.TiKVWorkers...),
+		TiSparkMasters:      append(s.TiSparkMasters, spec.TiSparkMasters...),
+		TiSparkWorkers:      append(s.TiSparkWorkers, spec.TiSparkWorkers...),
+		Monitors:            append(s.Monitors, spec.Monitors...),
+		Grafanas:            append(s.Grafanas, spec.Grafanas...),
+		Alertmanagers:       append(s.Alertmanagers, spec.Alertmanagers...),
 	}
 }
 
@@ -598,6 +624,7 @@ func (v *ComponentVersions) Merge(that ComponentVersions) ComponentVersions {
 		Drainer:      utils.Ternary(that.Drainer != "", that.Drainer, v.Drainer).(string),
 		CDC:          utils.Ternary(that.CDC != "", that.CDC, v.CDC).(string),
 		TiKVCDC:      utils.Ternary(that.TiKVCDC != "", that.TiKVCDC, v.TiKVCDC).(string),
+		TiKVWorker:   utils.Ternary(that.TiKVWorker != "", that.TiKVWorker, v.TiKVWorker).(string),
 		Grafana:      utils.Ternary(that.Grafana != "", that.Grafana, v.Grafana).(string),
 		Prometheus:   utils.Ternary(that.Prometheus != "", that.Prometheus, v.Prometheus).(string),
 		AlertManager: utils.Ternary(that.AlertManager != "", that.AlertManager, v.AlertManager).(string),
@@ -620,17 +647,18 @@ func fillCustomDefaults(globalOptions *GlobalOptions, data any) error {
 }
 
 var (
-	globalOptionTypeName      = reflect.TypeOf(GlobalOptions{}).Name()
-	monitorOptionTypeName     = reflect.TypeOf(MonitoredOptions{}).Name()
-	serverConfigsTypeName     = reflect.TypeOf(ServerConfigs{}).Name()
-	componentVersionsTypeName = reflect.TypeOf(ComponentVersions{}).Name()
-	componentSourcesTypeName  = reflect.TypeOf(ComponentSources{}).Name()
+	globalOptionTypeName        = reflect.TypeOf(GlobalOptions{}).Name()
+	monitorOptionTypeName       = reflect.TypeOf(MonitoredOptions{}).Name()
+	serverConfigsTypeName       = reflect.TypeOf(ServerConfigs{}).Name()
+	componentVersionsTypeName   = reflect.TypeOf(ComponentVersions{}).Name()
+	compoenttBaseImagesTypeName = reflect.TypeOf(ComponentBaseImages{}).Name()
+	componentSourcesTypeName    = reflect.TypeOf(ComponentSources{}).Name()
 )
 
 // Skip global/monitored options
 func isSkipField(field reflect.Value) bool {
 	tp := field.Type().Name()
-	return tp == globalOptionTypeName || tp == monitorOptionTypeName || tp == serverConfigsTypeName || tp == componentVersionsTypeName || tp == componentSourcesTypeName
+	return tp == globalOptionTypeName || tp == monitorOptionTypeName || tp == serverConfigsTypeName || tp == componentVersionsTypeName || tp == compoenttBaseImagesTypeName || tp == componentSourcesTypeName
 }
 
 func setDefaultDir(parent, role, port string, field reflect.Value) {
@@ -811,13 +839,14 @@ func (s *Specification) ComponentsByStopOrder() (comps []Component) {
 
 // ComponentsByStartOrder return component in the order need to start.
 func (s *Specification) ComponentsByStartOrder() (comps []Component) {
-	// "pd", "tso", "scheduling", "dashboard", "tiproxy", "tikv", "pump", "tidb", "tiflash", "drainer", "cdc", "tikv-cdc", "prometheus", "grafana", "alertmanager"
+	// "pd", "tso", "scheduling", "dashboard", "tiproxy", "tikv", "tikv_worker", "pump", "tidb", "tiflash", "drainer", "cdc", "tikv-cdc", "prometheus", "grafana", "alertmanager"
 	comps = append(comps, &PDComponent{s})
 	comps = append(comps, &TSOComponent{s})
 	comps = append(comps, &SchedulingComponent{s})
 	comps = append(comps, &DashboardComponent{s})
 	comps = append(comps, &TiProxyComponent{s})
 	comps = append(comps, &TiKVComponent{s})
+	comps = append(comps, &TiKVWorkerComponent{s})
 	comps = append(comps, &PumpComponent{s})
 	comps = append(comps, &TiDBComponent{s})
 	comps = append(comps, &TiFlashComponent{s})

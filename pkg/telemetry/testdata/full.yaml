@@ -1,3 +1,12 @@
+global:
+  dfs:
+    prefix: "test"
+    s3-endpoint: "http://172.8.8.8:9000"
+    s3-key-id: "minioadmin"
+    s3-secret-key: "minioadmin"
+    s3-bucket: "bucket-test"
+    s3-region: "local"
+
 server_configs:
   tidb:
     binlog.enable: true
@@ -29,6 +38,12 @@ tikv_servers:
     config:
       server.labels: { zone: "us-west-1", disk: "ssd" }
   - host: 172.19.0.105
+
+tikv_workers:
+  - host: 172.19.0.102
+    config:
+      register: true
+  - host: 172.19.0.103
 
 # tiflash eat too much memory
 # and binary is more than 1G..
